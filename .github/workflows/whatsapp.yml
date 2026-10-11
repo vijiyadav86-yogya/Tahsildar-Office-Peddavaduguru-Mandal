@@ -1,0 +1,75 @@
+name: Send WhatsApp Notice
+
+on:
+  repository_dispatch:
+    types: [send_notice]
+
+jobs:
+  send_whatsapp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send WhatsApp Document Notice
+        run: |
+          python3 -c "
+          import urllib.request, json
+
+          raw = '${{ github.event.client_payload.phone }}'.strip().replace('+', '').replace(' ', '')
+          phone = '91' + raw if len(raw) == 10 else raw
+
+          p_name = '${{ github.event.client_payload.person_name }}'
+          cat = '${{ github.event.client_payload.category }}'
+          ref = '${{ github.event.client_payload.ref_no }}'
+          due = '${{ github.event.client_payload.due_date }}'
+          file_url = '${{ github.event.client_payload.file_url }}'.strip()
+
+          phone_number_id = '1290612987479644'
+          token = '${{ secrets.WHATSAPP_TOKEN }}'
+
+          url = f'https://graph.facebook.com/v19.0/{phone_number_id}/messages'
+          headers = {
+              'Authorization': f'Bearer {token}',
+              'Content-Type': 'application/json'
+          }
+
+          # Telugu Notice Caption Text
+          caption_text = f'''🏛️ *తహసీల్దార్ కార్యాలయం, పెద్దవడుగూరు*
+━━━━━━━━━━━━━━━━━━━━
+📌 *అధికారిక నోటీస్ & ఆదేశాలు*
+
+👤 *గ్రహీత:* {p_name}
+📂 *విభాగం:* {cat}
+📄 *రిఫరెన్స్ నంబర్:* {ref}
+📅 *హాజరు / పరిష్కార గడువు:* {due}
+
+⚠️ *గమనిక:* నిర్ణీత గడువు తేదీలోగా సంబంధిత ఆధారాలతో కార్యాలయంలో హాజరుకావలెను/నివేదిక సమర్పించవలెను.'''
+
+          # PDF / Photo Document ఉంటే caption తో పంపడం
+          if file_url and file_url.startswith('http'):
+              payload = {
+                  'messaging_product': 'whatsapp',
+                  'recipient_type': 'individual',
+                  'to': phone,
+                  'type': 'document',
+                  'document': {
+                      'link': file_url,
+                      'caption': caption_text,
+                      'filename': f'{ref}.pdf'
+                  }
+              }
+          else:
+              payload = {
+                  'messaging_product': 'whatsapp',
+                  'recipient_type': 'individual',
+                  'to': phone,
+                  'type': 'text',
+                  'text': {'body': caption_text}
+              }
+
+          req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers)
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  print('✅ WhatsApp Sent Successfully:', resp.read().decode())
+          except urllib.error.HTTPError as e:
+              print('Send Error:', e.read().decode())
+              exit(1)
+          "
