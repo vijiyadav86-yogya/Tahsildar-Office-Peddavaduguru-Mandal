@@ -3,279 +3,175 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tahsildar Office, Peddavaduguru - Notice Portal</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <style>
-    body { background-color: #f0f4f8; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-    .card-box { border-radius: 16px; border: none; box-shadow: 0 8px 24px rgba(0,0,0,0.06); background: #ffffff; }
-    .border-gold { border: 2px solid #f59e0b !important; }
-    .btn-camera { background: #059669; color: white; border-radius: 10px; font-weight: 600; padding: 12px; }
-    .btn-camera:hover { background: #047857; color: white; }
-    .btn-pdf { background: #4338ca; color: white; border-radius: 10px; font-weight: 600; padding: 12px; }
-    .btn-pdf:hover { background: #3730a3; color: white; }
-    .btn-wa-direct { background: #25D366; color: white; font-size: 1.15rem; font-weight: bold; border-radius: 12px; padding: 14px; width: 100%; transition: all 0.2s; }
-    .btn-wa-direct:hover { background: #1ebc59; color: white; transform: translateY(-1px); }
-    #loginModal { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); }
-  </style>
+  <title>పెండింగ్ రిపోర్ట్ - తహసీల్దార్ కార్యాలయం, పెద్దవడుగూరు</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
+<body class="bg-slate-100 min-h-screen p-3 text-slate-800">
 
-  <!-- 1. PIN Login Screen -->
-  <div id="loginScreen" class="d-flex align-items-center justify-content-center min-vh-100 position-fixed w-100 top-0 start-0" style="z-index: 9999; background: #0f172a;">
-    <div class="card p-4 p-md-5 text-center shadow-lg" style="max-width: 400px; width: 90%; border-radius: 20px;">
-      <div class="mb-3">
-        <i class="fa-solid fa-landmark text-success fa-3x"></i>
+  <div class="max-w-md mx-auto space-y-4">
+    
+    <!-- Header -->
+    <div class="bg-indigo-800 text-white p-5 rounded-2xl shadow border-b-4 border-amber-500 flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <i class="fas fa-chart-pie text-2xl text-amber-400"></i>
+        <div>
+          <h1 class="text-base font-bold">సిబ్బంది వారీగా పెండింగ్ రిపోర్ట్</h1>
+          <p class="text-indigo-200 text-xs">తహసీల్దార్ కార్యాలయం, పెద్దవడుగూరు</p>
+        </div>
       </div>
-      <h4 class="fw-bold mb-1">Welcome to Tahsildar Office</h4>
-      <p class="text-muted small mb-4">పెద్దవడుగూరు రెవెన్యూ రికార్డ్స్ పోర్టల్</p>
-      
-      <div class="mb-3">
-        <label class="form-label fw-bold small text-muted">ENTER SECURITY PIN</label>
-        <input type="password" id="pinInput" class="form-control form-control-lg text-center fw-bold" placeholder="••••" maxlength="4" style="letter-spacing: 8px; font-size: 1.6rem;" autofocus>
+      <a href="./" class="bg-indigo-700 hover:bg-indigo-600 text-white text-xs px-2.5 py-1.5 rounded-lg border border-indigo-400 font-bold">
+        ← హోమ్
+      </a>
+    </div>
+
+    <!-- Summary Counts -->
+    <div class="grid grid-cols-2 gap-2">
+      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+        <p class="text-[11px] text-slate-500 font-bold">మొత్తం పెండింగ్ ఫైళ్లు</p>
+        <p id="totalPendingCount" class="text-xl font-black text-indigo-700">0</p>
       </div>
-      <button class="btn btn-success btn-lg w-100 fw-bold" onclick="verifyPin()">
-        లాగిన్ చేయండి <i class="fa-solid fa-arrow-right ms-2"></i>
+      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+        <p class="text-[11px] text-slate-500 font-bold">బాకీ ఉన్న సిబ్బంది</p>
+        <p id="totalStaffCount" class="text-xl font-black text-amber-600">0</p>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="flex gap-2">
+      <button onclick="copyReport()" class="flex-1 bg-indigo-600 active:bg-indigo-800 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow">
+        <i class="fas fa-copy"></i> రిపోర్ట్ కాపీ చేయి
       </button>
-      <div id="pinError" class="text-danger small mt-2 fw-bold" style="display: none;">తప్పుడు పిన్! దయచేసి సరైన పిన్ నమోదు చేయండి.</div>
+      <button onclick="shareReportWhatsApp()" class="flex-1 bg-emerald-600 active:bg-emerald-800 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow">
+        <i class="fab fa-whatsapp text-sm"></i> వాట్సాప్‌లో పంపు
+      </button>
     </div>
-  </div>
 
-  <!-- 2. Main Portal Interface -->
-  <div id="mainPortal" class="container py-4" style="max-width: 680px; display: none;">
-    <div class="card card-box p-4 p-md-4">
-      
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-bold text-dark m-0">కొత్త ఎంట్రీ & నోటీస్</h5>
-        <button class="btn btn-outline-primary btn-sm rounded-pill px-3" type="button" onclick="selectContact()">
-          <i class="fa-solid fa-address-book me-1"></i> కాంటాక్ట్ ఎంచుకో
-        </button>
-      </div>
+    <!-- List of Staff with Pending Days -->
+    <div id="reportList" class="space-y-3"></div>
 
-      <form id="revenueForm">
-        <!-- విభాగం -->
-        <div class="p-3 mb-3 rounded-3 border-gold" style="background: #fffbeb;">
-          <label class="form-label fw-bold text-dark mb-1">
-            <i class="fa-solid fa-list-check text-warning me-1"></i> విభాగం ఎంచుకోండి (Category) *
-          </label>
-          <select id="category" class="form-select form-select-lg fw-semibold" required>
-            <option value="">-- ఎంచుకోండి (Select Category) --</option>
-            <option value="1. Mutations (మ్యుటేషన్స్)">1. Mutations (మ్యుటేషన్స్)</option>
-            <option value="2. PGRS (ప్రజా సమస్యల పరిష్కార వేదిక)">2. PGRS (ప్రజా సమస్యల పరిష్కార వేదిక)</option>
-            <option value="3. Mandala arjilu (మండల అర్జీలు)">3. Mandala arjilu (మండల అర్జీలు)</option>
-            <option value="4. Others (ఇతరములు)">4. Others (ఇతరములు)</option>
-          </select>
-        </div>
-
-        <!-- గ్రహీత పేరు -->
-        <div class="mb-3">
-          <label class="form-label fw-bold">గ్రహీత పేరు (Person Name) *</label>
-          <input type="text" id="personName" class="form-control form-control-lg" placeholder="ఉదా: రాముడు / భూ యజమాని పేరు" required>
-        </div>
-
-        <!-- WhatsApp నంబర్ -->
-        <div class="mb-3">
-          <label class="form-label fw-bold">WhatsApp నంబర్ *</label>
-          <div class="input-group input-group-lg">
-            <span class="input-group-text fw-bold bg-light">+91</span>
-            <input type="tel" id="phoneNumber" class="form-control" placeholder="9876543210" pattern="[0-9]{10}" maxlength="10" required>
-          </div>
-        </div>
-
-        <!-- రిఫరెన్స్ నంబర్ -->
-        <div class="mb-3">
-          <label class="form-label fw-bold">డాక్యుమెంట్ / రిఫరెన్స్ నంబర్ *</label>
-          <input type="text" id="refNo" class="form-control form-control-lg" placeholder="ఉదా: F-8 నంబర్ / అర్జీ వివరాలు" required>
-        </div>
-
-        <!-- ఫైల్ అప్‌లోడ్ సెక్షన్ -->
-        <div class="p-3 mb-3 rounded-3" style="background: #eff6ff; border: 1px dashed #3b82f6;">
-          <label class="form-label fw-bold text-primary mb-2">
-            <i class="fa-solid fa-camera me-1"></i> డాక్యుమెంట్ ఫోటో లేదా PDF జతచేయండి:
-          </label>
-          <input type="file" id="realFileInput" accept="image/*,application/pdf" style="display: none;" onchange="handleFilePicked(event)">
-          
-          <div class="row g-2">
-            <div class="col-6">
-              <button type="button" class="btn btn-camera w-100" onclick="triggerUpload('camera')">
-                <i class="fa-solid fa-camera fa-lg d-block mb-1"></i> కెమెరా ఓపెన్ చేయి
-              </button>
-            </div>
-            <div class="col-6">
-              <button type="button" class="btn btn-pdf w-100" onclick="triggerUpload('file')">
-                <i class="fa-solid fa-file-pdf fa-lg d-block mb-1"></i> PDF / ఫైల్స్
-              </button>
-            </div>
-          </div>
-          <div id="fileSelectedBadge" class="mt-2 text-success fw-bold small text-center" style="display: none;"></div>
-        </div>
-
-        <!-- గడువు తేదీ -->
-        <div class="row g-2 mb-4">
-          <div class="col-6">
-            <label class="form-label fw-bold small">గడువు రోజులు మారు</label>
-            <select id="dueDaysSelect" class="form-select" onchange="calcDueDate(this.value)">
-              <option value="3" selected>3 రోజులు</option>
-              <option value="7">7 రోజులు</option>
-              <option value="15">15 రోజులు</option>
-              <option value="30">30 రోజులు</option>
-            </select>
-          </div>
-          <div class="col-6">
-            <label class="form-label fw-bold small">గడువు తేదీ (Due Date)</label>
-            <input type="date" id="dueDate" class="form-control" required>
-          </div>
-        </div>
-
-        <!-- Direct WhatsApp Submit Button -->
-        <button type="submit" id="submitBtn" class="btn btn-wa-direct shadow">
-          <i class="fa-brands fa-whatsapp fa-xl me-2"></i>వాట్సాప్‌లో డైరెక్ట్ పంపు (Send Document & Notice)
-        </button>
-        <div id="statusAlert" class="mt-3 text-center fw-bold" style="display: none;"></div>
-      </form>
-    </div>
   </div>
 
   <script>
-    const GITHUB_REPO = "vijiyadav86-yogya/What-s-app-peddavadagur-mandal-";
-    let selectedFileObj = null;
-
-    // PIN Authentication
-    function verifyPin() {
-      const pin = document.getElementById('pinInput').value.trim();
-      if (pin === "1207") {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainPortal').style.display = 'block';
-        calcDueDate(3);
-      } else {
-        document.getElementById('pinError').style.display = 'block';
-      }
-    }
-
-    // Auto Calculate Due Date
-    function calcDueDate(days) {
-      const date = new Date();
-      date.setDate(date.getDate() + parseInt(days));
-      document.getElementById('dueDate').value = date.toISOString().split('T')[0];
-    }
-
-    // File Trigger Handlers
-    function triggerUpload(type) {
-      const fi = document.getElementById('realFileInput');
-      if (type === 'camera') {
-        fi.setAttribute('capture', 'environment');
-      } else {
-        fi.removeAttribute('capture');
-      }
-      fi.click();
-    }
-
-    function handleFilePicked(e) {
-      if (e.target.files && e.target.files[0]) {
-        selectedFileObj = e.target.files[0];
-        const badge = document.getElementById('fileSelectedBadge');
-        badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> ఎంపిక చేయబడింది: ${selectedFileObj.name}`;
-        badge.style.display = 'block';
-      }
-    }
-
-    // Contact Picker API (Mobile browsers)
-    async function selectContact() {
-      if ('contacts' in navigator && 'select' in navigator.contacts) {
-        try {
-          const contacts = await navigator.contacts.select(['name', 'tel'], { multiple: false });
-          if (contacts.length > 0) {
-            if (contacts[0].name && contacts[0].name[0]) document.getElementById('personName').value = contacts[0].name[0];
-            if (contacts[0].tel && contacts[0].tel[0]) {
-              let num = contacts[0].tel[0].replace(/\D/g, '');
-              if (num.length > 10) num = num.slice(-10);
-              document.getElementById('phoneNumber').value = num;
-            }
-          }
-        } catch (err) {}
-      } else {
-        alert("మీ బ్రౌజర్ Contact Picker కి సపోర్ట్ చేయకపోతే నేరుగా నంబర్ టైప్ చేయండి.");
-      }
-    }
-
-    // Upload File Directly (Catbox direct stream)
-    async function uploadDocument(file) {
-      if (!file) return "";
+    function getEntries() {
       try {
-        const formData = new FormData();
-        formData.append('reqtype', 'fileupload');
-        formData.append('fileToUpload', file);
-        const res = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: formData });
-        if (res.ok) {
-          const link = await res.text();
-          return link.trim();
-        }
+        return JSON.parse(localStorage.getItem('f8_records') || '[]');
       } catch (e) {
-        console.error("File upload error:", e);
+        return [];
       }
-      return "";
     }
 
-    // Form Submit
-    document.getElementById('revenueForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const btn = document.getElementById('submitBtn');
-      const alertBox = document.getElementById('statusAlert');
+    function calculateDaysSince(sentDateStr) {
+      if (!sentDateStr) return 0;
+      var p = sentDateStr.split('/');
+      if (p.length !== 3) return 0;
+      var sent = new Date(p[2], parseInt(p[1], 10) - 1, p[0]);
+      var now = new Date();
+      sent.setHours(0,0,0,0);
+      now.setHours(0,0,0,0);
+      var diffDays = Math.floor((now - sent) / (1000 * 60 * 60 * 24));
+      return diffDays >= 0 ? diffDays : 0;
+    }
 
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>పంపుతోంది... వేచి ఉండండి';
-      alertBox.style.display = 'block';
-      alertBox.className = 'mt-3 text-center fw-bold text-primary';
-      alertBox.innerText = 'ఫైల్ ప్రాసెస్ చేయబడుతోంది...';
+    function buildData() {
+      var all = getEntries();
+      var pending = all.filter(function(r) { return r.status === 'PENDING'; });
+      var map = {};
 
-      let fileUrl = "";
-      if (selectedFileObj) {
-        fileUrl = await uploadDocument(selectedFileObj);
-      }
-
-      alertBox.innerText = 'వాట్సాప్‌కు నేరుగా పంపబడుతోంది...';
-
-      const payload = {
-        event_type: "send_notice",
-        client_payload: {
-          person_name: document.getElementById('personName').value,
-          phone: document.getElementById('phoneNumber').value,
-          category: document.getElementById('category').value,
-          ref_no: document.getElementById('refNo').value,
-          due_date: document.getElementById('dueDate').value,
-          file_url: fileUrl
+      pending.forEach(function(item) {
+        var days = calculateDaysSince(item.sentDate);
+        if (!map[item.name]) {
+          map[item.name] = {
+            name: item.name,
+            phone: item.phone,
+            total: 0,
+            maxDays: 0,
+            files: []
+          };
         }
-      };
-
-      try {
-        await fetch(`https://api.github.com/repos/${GITHUB_REPO}/dispatches`, {
-          method: "POST",
-          headers: {
-            "Accept": "application/vnd.github.v3+json",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
+        map[item.name].total++;
+        if (days > map[item.name].maxDays) map[item.name].maxDays = days;
+        map[item.name].files.push({
+          doc: item.docName,
+          cat: item.category || 'General',
+          days: days,
+          dueDate: item.dueDate
         });
+      });
 
-        alertBox.className = 'mt-3 text-center fw-bold text-success';
-        alertBox.innerText = '✅ వాట్సాప్‌కు నోటీస్ & డాక్యుమెంట్ విజయవంతంగా పంపబడింది!';
-        document.getElementById('revenueForm').reset();
-        document.getElementById('fileSelectedBadge').style.display = 'none';
-        selectedFileObj = null;
-        calcDueDate(3);
-      } catch (err) {
-        alertBox.className = 'mt-3 text-center fw-bold text-danger';
-        alertBox.innerText = '❌ పంపడంలో లోపం జరిగింది. మళ్ళీ ప్రయత్నించండి.';
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-brands fa-whatsapp fa-xl me-2"></i>వాట్సాప్‌లో డైరెక్ట్ పంపు (Send Document & Notice)';
+      return {
+        totalPending: pending.length,
+        staffList: Object.values(map)
+      };
+    }
+
+    function renderReport() {
+      var data = buildData();
+      document.getElementById('totalPendingCount').innerText = data.totalPending;
+      document.getElementById('totalStaffCount').innerText = data.staffList.length;
+
+      var container = document.getElementById('reportList');
+      if (data.staffList.length === 0) {
+        container.innerHTML = '<div class="bg-white p-6 rounded-2xl text-center text-slate-400 border border-slate-200"><i class="fas fa-check-circle text-emerald-500 text-3xl mb-2"></i><p class="text-xs font-bold">ప్రస్తుతం ఎలాంటి పెండింగ్ రికార్డులు లేవు!</p></div>';
+        return;
       }
-    });
 
-    // Enter Key on PIN input triggers login
-    document.getElementById('pinInput').addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') verifyPin();
-    });
+      container.innerHTML = data.staffList.map(function(s) {
+        return '<div class="bg-white border rounded-2xl p-4 shadow-sm space-y-2.5">' +
+          '<div class="flex justify-between items-center border-b pb-2">' +
+            '<div>' +
+              '<h3 class="font-bold text-sm text-slate-800">' + s.name + '</h3>' +
+              '<p class="text-[11px] text-slate-500 font-mono">+91 ' + s.phone + '</p>' +
+            '</div>' +
+            '<div class="text-right">' +
+              '<span class="bg-red-100 text-red-700 px-2.5 py-0.5 rounded-full font-bold text-[10px]">' + s.total + ' ఫైళ్లు</span>' +
+              '<p class="text-[10px] font-bold text-red-600 mt-1">గరిష్టంగా ' + s.maxDays + ' రోజుల నుండి</p>' +
+            '</div>' +
+          '</div>' +
+          '<div class="space-y-1.5">' +
+            s.files.map(function(f) {
+              return '<div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg text-xs border border-slate-100">' +
+                '<div class="truncate max-w-[210px]">' +
+                  '<p class="font-bold text-slate-800 truncate">' + f.doc + '</p>' +
+                  '<p class="text-[10px] text-slate-500">' + f.cat + ' | చివరి తేదీ: ' + f.dueDate + '</p>' +
+                '</div>' +
+                '<span class="px-2 py-0.5 rounded text-[11px] font-extrabold ' + (f.days > 3 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800') + '">' +
+                  f.days + ' రోజులు' +
+                '</span>' +
+              '</div>';
+            }).join('') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function getReportText() {
+      var data = buildData();
+      if (data.staffList.length === 0) return "తహసీల్దార్ కార్యాలయం, పెద్దవడుగూరు: ప్రస్తుతం ఎలాంటి పెండింగ్ ఫైళ్లు లేవు.";
+
+      var txt = "*తహసీల్దార్ కార్యాలయం, పెద్దవడుగూరు*\n*సిబ్బంది వారీగా పెండింగ్ ఫైళ్ల వివరాలు:*\n----------------------------------\n";
+      data.staffList.forEach(function(s, idx) {
+        txt += (idx + 1) + ". *" + s.name + "* (మొత్తం పెండింగ్: " + s.total + ")\n";
+        s.files.forEach(function(f) {
+          txt += "   • " + f.doc + " [" + f.cat + "] -> *" + f.days + " రోజుల నుండి పెండింగ్*\n";
+        });
+        txt += "\n";
+      });
+      txt += "దయచేసి పై ఫైళ్లను వెంటనే పరిష్కరించి నివేదిక సమర్పించగలరు.";
+      return txt;
+    }
+
+    function copyReport() {
+      navigator.clipboard.writeText(getReportText()).then(function() {
+        alert("పెండింగ్ రిపోర్ట్ కాపీ అయింది! మీరు వాట్సాప్ గ్రూప్‌లో పేస్ట్ చేసుకోవచ్చు.");
+      });
+    }
+
+    function shareReportWhatsApp() {
+      window.location.href = "https://api.whatsapp.com/send?text=" + encodeURIComponent(getReportText());
+    }
+
+    window.onload = renderReport;
   </script>
 </body>
 </html>
