@@ -1,0 +1,88 @@
+name: Send WhatsApp Notice
+
+on:
+  repository_dispatch:
+    types: [send_notice]
+
+jobs:
+  send_whatsapp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send WhatsApp Document Notice
+        run: |
+          python3 -c "
+          import urllib.request, json
+
+          raw = '${{ github.event.client_payload.phone }}'.strip().replace('+', '').replace(' ', '')
+          phone = '91' + raw if len(raw) == 10 else raw
+
+          p_name = '${{ github.event.client_payload.person_name }}'
+          cat = '${{ github.event.client_payload.category }}'
+          ref = '${{ github.event.client_payload.ref_no }}'
+          due = '${{ github.event.client_payload.due_date }}'
+          file_url = '${{ github.event.client_payload.file_url }}'.strip()
+
+          url = 'https://graph.facebook.com/v19.0/1290612987479644/messages'
+          headers = {
+              'Authorization': 'Bearer ${{ secrets.WHATSAPP_TOKEN }}',
+              'Content-Type': 'application/json'
+          }
+
+          # 1. అధికారిక టెంప్లేట్ ద్వారా పంపడానికి ప్రయత్నం
+          payload_template = {
+              'messaging_product': 'whatsapp',
+              'recipient_type': 'individual',
+              'to': phone,
+              'type': 'template',
+              'template': {
+                  'name': 'revenue_pdf_notice',
+                  'language': {'code': 'te'},
+                  'components': [
+                      {
+                          'type': 'header',
+                          'parameters': [
+                              {
+                                  'type': 'document',
+                                  'document': {
+                                      'link': file_url if file_url else 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+                                      'filename': 'Revenue_Notice.pdf'
+                                  }
+                              }
+                          ]
+                      },
+                      {
+                          'type': 'body',
+                          'parameters': [
+                              {'type': 'text', 'text': p_name},
+                              {'type': 'text', 'text': cat},
+                              {'type': 'text', 'text': ref},
+                              {'type': 'text', 'text': due}
+                          ]
+                      }
+                  ]
+              }
+          }
+
+          # 2. ఒకవేళ టెంప్లేట్ ఇంకా In Review లో ఉంటే వాట్సాప్ ఆగకుండా డైరెక్ట్ టెక్స్ట్ + డౌన్‌లోడ్ లింక్ వెళ్లేలా బ్యాకప్
+          msg_backup = f'🏛️ *తహసీల్దార్ కార్యాలయం, పెద్దవడుగూరు*\n━━━━━━━━━━━━━━━━━━━━\n📌 *అధికారిక నోటీస్ & ఆదేశాలు*\n\n👤 *గ్రహీత:* {p_name}\n📂 *విభాగం:* {cat}\n📄 *రిఫరెన్స్ నంబర్:* {ref}\n📅 *పరిష్కార గడువు తేదీ:* {due}\n\n⚠️ *గమనిక:* నిర్ణీత గడువులోగా తగిన నివేదికను కార్యాలయంలో సమర్పించవలసిందిగా ఆదేశించడమైనది.'
+          if file_url:
+              msg_backup += f'\n\n📥 *నోటీస్ PDF డౌన్‌లోడ్ చేసుకోండి:*\n{file_url}'
+
+          payload_text = {
+              'messaging_product': 'whatsapp',
+              'recipient_type': 'individual',
+              'to': phone,
+              'type': 'text',
+              'text': {'body': msg_backup}
+          }
+
+          try:
+              req = urllib.request.Request(url, data=json.dumps(payload_template).encode('utf-8'), headers=headers)
+              with urllib.request.urlopen(req) as resp:
+                  print('Template Sent Successfully:', resp.read().decode())
+          except urllib.error.HTTPError as e:
+              print('Template failed (still in review). Falling back to direct message:', e.read().decode())
+              req2 = urllib.request.Request(url, data=json.dumps(payload_text).encode('utf-8'), headers=headers)
+              with urllib.request.urlopen(req2) as resp2:
+                  print('Fallback Message Sent:', resp2.read().decode())
+          "
