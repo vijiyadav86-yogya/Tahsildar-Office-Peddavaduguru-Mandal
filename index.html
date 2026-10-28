@@ -173,7 +173,7 @@
         </div>
         <div class="flex items-center gap-2">
           <button id="lockFormBtn" onclick="lockDispatchForm()" class="hidden text-xs font-bold text-slate-700 bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-xl transition flex items-center gap-1 cursor-pointer">
-            <i data-lucide="lock" class="w-3.5 h-3.5"></i> తిరిగి లాక్ చేయي
+            <i data-lucide="lock" class="w-3.5 h-3.5"></i> తిరిగి లాక్ చేయి
           </button>
           <span class="text-xs font-semibold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200 flex items-center gap-1.5">
             <i data-lucide="check-check" class="w-3.5 h-3.5"></i> ఆన్‌లైన్ ద్వారా నోటీస్ సదుపాయం
@@ -686,12 +686,12 @@
         ? `⚠️ *గమనిక:* ఇది మీకు పంపబడుతున్న *${count}వ రిమైండర్*. గడువు ముగిసినా కూడా మీరు నివేదికను సమర్పించలేదు. తక్షణమే క్షేత్రస్థాయి విచారణ పూర్తి చేసి నివేదిక సమర్పించవలసిందిగా ఆదేశించడమైనది. లేనియెడల ఉన్నతాధికారులకు క్రమశిక్షణా నివేదిక పంపబడును.`
         : `⚠️ *గమనిక:* నిర్ణీత గడువులోగా క్షేత్రస్థాయి విచారణ పూర్తి చేసి నివేదిక సమర్పించవలసిందిగా ఆదేశించడమైనది.`;
 
-      let fileDetailsText = "";
+      let fileLinkText = "";
       if (item.fileInfo && item.fileInfo.name) {
-        fileDetailsText = `\n📄 *అర్జీ ఫైల్ పేరు:* ${item.fileInfo.name}\n🔗 *గమనిక:* పూర్తి డాక్యుమెంట్ పరిశీలన కొరకు ఆన్‌లైన్ డాష్‌బోర్డ్ చూడండి.`;
+        fileLinkText = `\n📄 *అర్జీ డాక్యుమెంట్:* ${item.fileInfo.name}\n🔗 *పరిశీలన:* తహసీల్దార్ వెబ్‌సైట్ డాష్‌బోర్డ్‌లో 'చూడండి' బటన్ ద్వారా PDF ని వీక్షించవచ్చు.`;
       }
 
-      return `${header}\n━━━━━━━━━━━━━━━━━━━━\n📌 *విచారణ నివేదిక కొరకు*\n\n👤 *సిబ్బంది పేరు:* ${item.staffName}\n📂 *అర్జీ రకం :* ${item.appType}\n👤 *అర్జిదారుని పేరు :* ${item.applicantName}\n📄 *రిఫరెన్స్ నంబర్:* ${item.refNo}\n📅 *పరిష్కార గడువు తేదీ:* ${item.dueDate ? item.dueDate.replace('T', ' ') : 'N/A'}${fileDetailsText}\n\n${reminderNote}`;
+      return `${header}\n━━━━━━━━━━━━━━━━━━━━\n📌 *విచారణ నివేదిక కొరకు*\n\n👤 *సిబ్బంది పేరు:* ${item.staffName}\n📂 *అర్జీ రకం :* ${item.appType}\n👤 *అర్జిదారుని పేరు :* ${item.applicantName}\n📄 *రిఫరెన్స్ నంబర్:* ${item.refNo}\n📅 *పరిష్కార గడువు తేదీ:* ${item.dueDate ? item.dueDate.replace('T', ' ') : 'N/A'}${fileLinkText}\n\n${reminderNote}`;
     }
 
     function dispatchToWhatsApp(phone, text) {
