@@ -16,6 +16,7 @@
   
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -275,7 +276,7 @@
           </div>
 
           <div class="flex justify-end pt-4 border-t border-slate-100">
-            <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-sm font-bold px-8 py-3.5 rounded-2xl shadow-lg shadow-emerald-700/20 active:scale-95 transition cursor-pointer">
+            <button type="submit" id="submitBtn" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-sm font-bold px-8 py-3.5 rounded-2xl shadow-lg shadow-emerald-700/20 active:scale-95 transition cursor-pointer">
               <i data-lucide="send" class="w-4 h-4"></i> WhatsApp లో ఆదేశాలు పంపు & క్లౌడ్‌లో సేవ్ చేయి
             </button>
           </div>
@@ -608,6 +609,7 @@
     };
 
     let db;
+    let storage;
     let records = [];
 
     function initFirebaseAndListen() {
@@ -616,6 +618,7 @@
           firebase.initializeApp(firebaseConfig);
         }
         db = firebase.firestore();
+        storage = firebase.storage();
         listenToRealtimeUpdates();
       } catch (err) {
         console.error("Firebase init failed: ", err);
@@ -687,8 +690,8 @@
         : `⚠️ *గమనిక:* నిర్ణీత గడువులోగా క్షేత్రస్థాయి విచారణ పూర్తి చేసి నివేదిక సమర్పించవలసిందిగా ఆదేశించడమైనది.`;
 
       let fileLinkText = "";
-      if (item.fileInfo && item.fileInfo.name) {
-        fileLinkText = `\n📄 *అర్జీ డాక్యుమెంట్:* ${item.fileInfo.name}\n🔗 *పరిశీలన:* తహసీల్దార్ వెబ్‌సైట్ డాష్‌బోర్డ్‌లో 'చూడండి' బటన్ ద్వారా PDF ని వీక్షించవచ్చు.`;
+      if (item.fileInfo && item.fileInfo.url) {
+        fileLinkText = `\n📄 *అర్జీ ఫైల్ పేరు:* ${item.fileInfo.name}\n🔗 *డౌన్‌లోడ్ / వీక్షణ లింక్:*\n${item.fileInfo.url}`;
       }
 
       return `${header}\n━━━━━━━━━━━━━━━━━━━━\n📌 *విచారణ నివేదిక కొరకు*\n\n👤 *సిబ్బంది పేరు:* ${item.staffName}\n📂 *అర్జీ రకం :* ${item.appType}\n👤 *అర్జిదారుని పేరు :* ${item.applicantName}\n📄 *రిఫరెన్స్ నంబర్:* ${item.refNo}\n📅 *పరిష్కార గడువు తేదీ:* ${item.dueDate ? item.dueDate.replace('T', ' ') : 'N/A'}${fileLinkText}\n\n${reminderNote}`;
@@ -697,15 +700,6 @@
     function dispatchToWhatsApp(phone, text) {
       const url = `https://api.whatsapp.com/send?phone=91${phone}&text=${encodeURIComponent(text)}`;
       window.open(url, '_blank');
-    }
-
-    function fileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve({ name: file.name, type: file.type, data: reader.result });
-        reader.onerror = error => reject(error);
-      });
     }
 
     async function getFormData() {
@@ -722,14 +716,24 @@
         return null;
       }
 
-      let fileData = null;
+      let fileInfoData = null;
       if (fileInput.files.length > 0) {
         const file = fileInput.files[0];
-        if (file.size > 950000) {
-          alert("ఫైల్ సైజు 1MB కంటే తక్కువగా ఉండాలి.");
+        try {
+          const filePath = `notices/${Date.now()}_${file.name}`;
+          const storageRef = storage.ref().child(filePath);
+          const snapshot = await storageRef.put(file);
+          const downloadURL = await snapshot.ref.getDownloadURL();
+
+          fileInfoData = {
+            name: file.name,
+            type: file.type,
+            url: downloadURL
+          };
+        } catch (uploadErr) {
+          alert("ఫైల్ అప్లోడ్ విఫలమైంది: " + uploadErr.message);
           return null;
         }
-        fileData = await fileToBase64(file);
       }
 
       const now = new Date().toISOString();
@@ -745,15 +749,24 @@
         sentAt: now,
         lastReminderAt: null,
         reminderCount: 0,
-        fileInfo: fileData,
+        fileInfo: fileInfoData,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       };
     }
 
     document.getElementById('dispatchForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = "అప్‌లోడ్ అవుతోంది...";
+
       const item = await getFormData();
-      if (!item) return;
+      if (!item) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "WhatsApp లో ఆదేశాలు పంపు & క్లౌడ్‌లో సేవ్ చేయి";
+        return;
+      }
 
       try {
         await db.collection("notices").add(item);
@@ -765,6 +778,9 @@
       } catch (err) {
         console.error("Save Error:", err);
         alert("క్లౌడ్‌లో సేవ్ చేయడం విఫలమైంది: " + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "WhatsApp లో ఆదేశాలు పంపు & క్లౌడ్‌లో సేవ్ చేయి";
       }
     });
 
@@ -973,11 +989,11 @@
 
         const tdFile = document.createElement('td');
         tdFile.className = "px-5 py-4 text-center";
-        if (r.fileInfo) {
+        if (r.fileInfo && r.fileInfo.url) {
           const btnView = document.createElement('button');
           btnView.className = "inline-flex items-center gap-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 font-bold px-3 py-1.5 rounded-xl border border-cyan-300 text-xs shadow-sm transition cursor-pointer";
           btnView.innerHTML = `<i data-lucide="eye" class="w-4 h-4 text-cyan-600"></i> చూడండి`;
-          btnView.onclick = () => viewFilePreview(r.docId);
+          btnView.onclick = () => window.open(r.fileInfo.url, '_blank');
           tdFile.appendChild(btnView);
         } else {
           tdFile.innerHTML = `<span class="text-slate-400 text-xs italic">ఫైల్ లేదు</span>`;
@@ -1034,21 +1050,6 @@
       });
 
       lucide.createIcons();
-    }
-
-    function viewFilePreview(docId) {
-      const item = records.find(r => String(r.docId).trim() === String(docId).trim());
-      if (!item || !item.fileInfo || !item.fileInfo.data) {
-        alert("ఈ అర్జీకి సంబంధించిన డాక్యుమెంట్ అందుబాటులో లేదు.");
-        return;
-      }
-
-      const win = window.open();
-      if (item.fileInfo.type && item.fileInfo.type.includes('pdf')) {
-        win.document.write(`<title>${item.fileInfo.name}</title><iframe src="${item.fileInfo.data}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
-      } else {
-        win.document.write(`<title>${item.fileInfo.name}</title><body style="margin:0; background:#0f172a; display:flex; align-items:center; justify-content:center; height:100vh;"><img src="${item.fileInfo.data}" style="max-width:92%; max-height:92%; margin:auto; border-radius:14px; box-shadow:0 15px 35px rgba(0,0,0,0.6);" /></body>`);
-      }
     }
 
     function exportToCSV() {
