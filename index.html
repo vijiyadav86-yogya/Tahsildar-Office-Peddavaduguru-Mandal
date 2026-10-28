@@ -686,12 +686,12 @@
         ? `⚠️ *గమనిక:* ఇది మీకు పంపబడుతున్న *${count}వ రిమైండర్*. గడువు ముగిసినా కూడా మీరు నివేదికను సమర్పించలేదు. తక్షణమే క్షేత్రస్థాయి విచారణ పూర్తి చేసి నివేదిక సమర్పించవలసిందిగా ఆదేశించడమైనది. లేనియెడల ఉన్నతాధికారులకు క్రమశిక్షణా నివేదిక పంపబడును.`
         : `⚠️ *గమనిక:* నిర్ణీత గడువులోగా క్షేత్రస్థాయి విచారణ పూర్తి చేసి నివేదిక సమర్పించవలసిందిగా ఆదేశించడమైనది.`;
 
-      let fileLinkText = "";
-      if (item.fileInfo && item.fileInfo.data) {
-        fileLinkText = `\n📄 *అర్జీ ఫైల్ పేరు:* ${item.fileInfo.name}\n🔗 *వీక్షణ లింక్ (View):*\n${item.fileInfo.data}`;
+      let fileInfoText = "";
+      if (item.fileInfo && item.fileInfo.name) {
+        fileInfoText = `\n📄 *అర్జీ ఫైల్ పేరు:* ${item.fileInfo.name}\n🔗 *గమనిక:* పూర్తి డాక్యుమెంట్ (PDF) తహసీల్దార్ డాష్‌బోర్డ్‌లో 'చూడండి' బటన్ ద్వారా వీక్షించవచ్చు.`;
       }
 
-      return `${header}\n━━━━━━━━━━━━━━━━━━━━\n📌 *విచారణ నివేదిక కొరకు*\n\n👤 *సిబ్బంది పేరు:* ${item.staffName}\n📂 *అర్జీ రకం :* ${item.appType}\n👤 *అర్జిదారుని పేరు :* ${item.applicantName}\n📄 *రిఫరెన్స్ నంబర్:* ${item.refNo}\n📅 *పరిష్కార గడువు తేదీ:* ${item.dueDate ? item.dueDate.replace('T', ' ') : 'N/A'}${fileLinkText}\n\n${reminderNote}`;
+      return `${header}\n━━━━━━━━━━━━━━━━━━━━\n📌 *విచారణ నివేదిక కొరకు*\n\n👤 *సిబ్బంది పేరు:* ${item.staffName}\n📂 *అర్జీ రకం :* ${item.appType}\n👤 *అర్జిదారుని పేరు :* ${item.applicantName}\n📄 *రిఫరెన్స్ నంబర్:* ${item.refNo}\n📅 *పరిష్కార గడువు తేదీ:* ${item.dueDate ? item.dueDate.replace('T', ' ') : 'N/A'}${fileInfoText}\n\n${reminderNote}`;
     }
 
     function dispatchToWhatsApp(phone, text) {
